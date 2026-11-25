@@ -40,15 +40,97 @@ MODEL_INFO = {
 REQUIRED_COLUMNS = ["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount"]
 LABEL_COLUMN_CANDIDATES = ["Class", "class", "Label", "label", "Actual", "actual", "is_fraud", "isFraud"]
 
-COLORS = {
-    "navy": "#0B1F3A", "navy_light": "#16314F", "accent": "#4F7CFF", "accent2": "#7C5CFF",
-    "accent_soft": "#EAF0FF", "fraud": "#E5484D", "fraud_soft": "#FDEAEA",
-    "legit": "#1FA97A", "legit_soft": "#E8F8F1", "amber": "#F5A623", "amber_soft": "#FFF4E0",
-    "muted": "#64748B",
+THEMES = {
+    "light": {
+        "color_scheme": "light",
+        "bg_app": "radial-gradient(1200px 600px at 10% -10%, #EEF3FF 0%, transparent 60%), radial-gradient(1000px 500px at 100% 0%, #F3FBF7 0%, transparent 55%), #F7F9FC",
+        "surface": "#FFFFFF",
+        "surface_alt": "#FBFCFE",
+        "border": "#EAEFF5",
+        "border_hover": "#DCE6F7",
+        "text_primary": "#0B1F3A",
+        "text_muted": "#64748B",
+        "accent": "#4F7CFF",
+        "accent2": "#7C5CFF",
+        "accent_soft": "#EAF0FF",
+        "fraud": "#E5484D",
+        "fraud_soft": "#FDEAEA",
+        "legit": "#1FA97A",
+        "legit_soft": "#E8F8F1",
+        "amber": "#F5A623",
+        "amber_soft": "#FFF4E0",
+        "grid": "#EEF1F6",
+        "card_shadow": "0 4px 16px rgba(15,30,60,0.05)",
+        "sidebar_bg": "linear-gradient(200deg, #0B1F3A 0%, #10233D 55%, #0A1830 100%)",
+        "hero_bg": "linear-gradient(120deg, #0B1F3A 0%, #1E3A5F 55%, #4F7CFF 140%)",
+        "btn_bg": "linear-gradient(120deg, #0B1F3A, #173a63)",
+        "input_bg": "#FFFFFF",
+        "stepper_bg": "#F1F5F9",
+        "alert_bg": "#EAF0FF",
+        "alert_border": "#C5D6FF",
+        "alert_text": "#0B1F3A",
+        "switch_bg": "#FFFFFF",
+        "switch_border": "#DCE6F7",
+    },
+    "dark": {
+        "color_scheme": "dark",
+        "bg_app": "radial-gradient(1200px 600px at 10% -10%, #15223D 0%, transparent 60%), radial-gradient(1000px 500px at 100% 0%, #0F2922 0%, transparent 55%), #0B1120",
+        "surface": "#131C31",
+        "surface_alt": "#18233C",
+        "border": "#22304D",
+        "border_hover": "#344973",
+        "text_primary": "#E2E8F0",
+        "text_muted": "#94A3B8",
+        "accent": "#608DFF",
+        "accent2": "#9277FF",
+        "accent_soft": "rgba(96, 141, 255, 0.16)",
+        "fraud": "#F25F64",
+        "fraud_soft": "rgba(242, 95, 100, 0.16)",
+        "legit": "#2AC790",
+        "legit_soft": "rgba(42, 199, 144, 0.16)",
+        "amber": "#F7B543",
+        "amber_soft": "rgba(247, 181, 67, 0.16)",
+        "grid": "#1E293B",
+        "card_shadow": "0 6px 20px rgba(0, 0, 0, 0.35)",
+        "sidebar_bg": "linear-gradient(200deg, #070C17 0%, #0D1526 55%, #060A14 100%)",
+        "hero_bg": "linear-gradient(120deg, #111D35 0%, #1B3156 55%, #4368D6 140%)",
+        "btn_bg": "linear-gradient(120deg, #3B66E0, #5A45D6)",
+        "input_bg": "#18233C",
+        "stepper_bg": "#1F2D4A",
+        "alert_bg": "#162440",
+        "alert_border": "#2B4270",
+        "alert_text": "#E2E8F0",
+        "switch_bg": "#18233C",
+        "switch_border": "#344973",
+    },
 }
-FRAUD_MAP = {"Legitimate": COLORS["legit"], "Fraud": COLORS["fraud"]}
 
 st.set_page_config(page_title="Financial Fraud Detection", page_icon="💳", layout="wide", initial_sidebar_state="expanded")
+
+st.session_state.setdefault("theme_mode", "light")
+
+
+def toggle_theme():
+    st.session_state["theme_mode"] = "dark" if st.session_state["theme_mode"] == "light" else "light"
+
+
+T = THEMES[st.session_state["theme_mode"]]
+
+COLORS = {
+    "navy": T["text_primary"],
+    "navy_light": T["surface_alt"],
+    "accent": T["accent"],
+    "accent2": T["accent2"],
+    "accent_soft": T["accent_soft"],
+    "fraud": T["fraud"],
+    "fraud_soft": T["fraud_soft"],
+    "legit": T["legit"],
+    "legit_soft": T["legit_soft"],
+    "amber": T["amber"],
+    "amber_soft": T["amber_soft"],
+    "muted": T["text_muted"],
+}
+FRAUD_MAP = {"Legitimate": COLORS["legit"], "Fraud": COLORS["fraud"]}
 
 # ============================================================
 # THEME
@@ -57,40 +139,190 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {{ font-family:'Inter',sans-serif; }}
-html {{ color-scheme: light; }}
-/* Low-specificity reset so plain Streamlit text stays readable even if a
-   visitor's browser/OS is set to dark mode. Any element with its own class
-   (hero-banner, feature-card, metric-card, sidebar, etc.) already sets its
-   own color with higher specificity and overrides this automatically. */
-p, li, span, div, label, small, td, th {{ color:{COLORS['navy']}; }}
-:root {{ --navy:{COLORS['navy']}; --accent:{COLORS['accent']}; --accent2:{COLORS['accent2']};
-  --accent-soft:{COLORS['accent_soft']}; --fraud:{COLORS['fraud']}; --fraud-soft:{COLORS['fraud_soft']};
-  --legit:{COLORS['legit']}; --legit-soft:{COLORS['legit_soft']}; --amber:{COLORS['amber']};
-  --amber-soft:{COLORS['amber_soft']}; --muted:{COLORS['muted']}; }}
+html {{ color-scheme: {T['color_scheme']}; }}
 
-.stApp {{ background: radial-gradient(1200px 600px at 10% -10%, #EEF3FF 0%, transparent 60%),
-  radial-gradient(1000px 500px at 100% 0%, #F3FBF7 0%, transparent 55%), #F7F9FC; }}
+:root {{
+  --bg-app: {T['bg_app']};
+  --surface: {T['surface']};
+  --surface-alt: {T['surface_alt']};
+  --border: {T['border']};
+  --border-hover: {T['border_hover']};
+  --text-primary: {T['text_primary']};
+  --navy: {T['text_primary']};
+  --muted: {T['text_muted']};
+  --accent: {T['accent']};
+  --accent2: {T['accent2']};
+  --accent-soft: {T['accent_soft']};
+  --fraud: {T['fraud']};
+  --fraud-soft: {T['fraud_soft']};
+  --legit: {T['legit']};
+  --legit-soft: {T['legit_soft']};
+  --amber: {T['amber']};
+  --amber-soft: {T['amber_soft']};
+  --card-shadow: {T['card_shadow']};
+}}
 
-section[data-testid="stSidebar"] {{ background: linear-gradient(200deg, var(--navy) 0%, #10233D 55%, #0A1830 100%); }}
+p, li, span, div, label, small, td, th {{ color: var(--text-primary); }}
+h1, h2, h3, h4, h5 {{ color: var(--text-primary) !important; font-weight:800 !important; letter-spacing:-0.02em; }}
+
+/* App Canvas & Header */
+.stApp {{ background: var(--bg-app); }}
+header[data-testid="stHeader"] {{ background: transparent !important; }}
+
+/* Make room between "Deploy" and the 3-dot menu for the floating theme switch */
+div[data-testid="stAppDeployButton"] {{
+  margin-right: 44px !important;
+}}
+header[data-testid="stHeader"] button,
+header[data-testid="stHeader"] span {{
+  color: var(--text-primary) !important;
+}}
+
+/* Minimal Icon-Only Theme Switch aligned on the exact same baseline as Deploy and 3-dot menu */
+div.st-key-theme_switch_btn {{
+  position: fixed !important;
+  top: 0.78rem !important;
+  right: 3.1rem !important;
+  width: 32px !important;
+  height: 32px !important;
+  z-index: 999995 !important;
+  margin: 0 !important;
+}}
+div.st-key-theme_switch_btn button {{
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.05rem !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease !important;
+}}
+div.st-key-theme_switch_btn button p {{
+  margin: 0 !important;
+  line-height: 1 !important;
+}}
+div.st-key-theme_switch_btn button:hover {{
+  background: rgba(128, 128, 128, 0.14) !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}}
+
+/* Fix st.info / st.success / st.warning / st.error inner backgrounds & text */
+div[data-testid="stAlert"],
+div[data-testid="stAlert"] > div,
+div[data-testid="stAlertContainer"] {{
+  border-radius: 14px !important;
+  background-color: {T['alert_bg']} !important;
+  border: 1px solid {T['alert_border']} !important;
+}}
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] span,
+div[data-testid="stAlert"] strong,
+div[data-testid="stAlert"] div {{
+  color: {T['alert_text']} !important;
+}}
+
+/* Streamlit Inputs, Number Steppers, Selectboxes & Expanders */
+div[data-baseweb="select"] > div,
+div[data-baseweb="input"] > div,
+div[data-testid="stNumberInput"] > div,
+div[data-testid="stNumberInput"] input {{
+  background-color: {T['input_bg']} !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}}
+button[data-testid="stNumberInputStepDown"],
+button[data-testid="stNumberInputStepUp"] {{
+  background-color: {T['stepper_bg']} !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}}
+button[data-testid="stNumberInputStepDown"] svg,
+button[data-testid="stNumberInputStepUp"] svg {{
+  fill: var(--text-primary) !important;
+}}
+details[data-testid="stExpander"],
+div[data-testid="stForm"] {{
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+}}
+
+/* Sidebar & Bottom-Pinned Credit (Visible, Symmetric & Zero Scroll) */
+section[data-testid="stSidebar"] {{
+  background: {T['sidebar_bg']};
+}}
+section[data-testid="stSidebar"] > div:first-child {{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}}
 section[data-testid="stSidebar"] * {{ color:#E8EEF9 !important; }}
-section[data-testid="stSidebar"] hr {{ border-color: rgba(255,255,255,0.12); }}
-section[data-testid="stSidebar"] .stRadio label {{ font-weight:600; }}
+section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] {{
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  padding-top: 0.4rem !important;
+  padding-bottom: 1.1rem !important;
+  overflow: hidden !important;
+}}
+section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div,
+section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] div[data-testid="stVerticalBlock"] {{
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+}}
+section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] div[data-testid="stVerticalBlock"] > div:last-child {{
+  margin-top: auto !important;
+  padding-top: 0 !important;
+}}
+section[data-testid="stSidebar"] div[role="radiogroup"] {{
+  width: fit-content !important;
+  margin: 0 auto !important;
+}}
+section[data-testid="stSidebar"] .stRadio label,
+section[data-testid="stSidebar"] div[role="radiogroup"] label p {{
+  font-weight: 600 !important;
+  font-size: 1.05rem !important;
+}}
 section[data-testid="stSidebar"] div[role="radiogroup"] > label {{
-  padding:0.35rem 0.6rem; border-radius:8px; transition:background .15s ease; }}
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {{ background: rgba(255,255,255,0.06); }}
-
-h1,h2,h3 {{ color:var(--navy); font-weight:800 !important; letter-spacing:-0.02em; }}
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  transition: background .15s ease;
+}}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {{ background: rgba(255,255,255,0.08); }}
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+  background-color: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}}
+section[data-testid="stSidebar"] .sidebar-bottom-credit {{
+  width: 100%;
+  text-align: center;
+  font-size: 0.82rem !important;
+  font-weight: 400 !important;
+  color: #8896AB !important;
+  letter-spacing: 0.01em;
+}}
 
 /* Hero */
-.hero-banner {{ background: linear-gradient(120deg, var(--navy) 0%, #1E3A5F 55%, var(--accent) 140%);
+.hero-banner {{ background: {T['hero_bg']};
   padding: 3rem 2.6rem; border-radius: 20px; color:white; margin-bottom: 1.8rem;
   box-shadow: 0 16px 40px rgba(11,31,58,0.28); position:relative; overflow:hidden; }}
 .hero-banner::after {{ content:""; position:absolute; inset:0;
   background: radial-gradient(circle at 85% 20%, rgba(124,92,255,0.35), transparent 55%); }}
-.hero-banner h1 {{ color:white !important; font-size:2.5rem; margin-bottom:0.6rem; position:relative; }}
-.hero-banner p {{ color:#D6E2F5; font-size:1.05rem; max-width:640px; margin:0; position:relative; }}
+div.hero-banner h1, div.hero-banner h1 span {{ color: #FFFFFF !important; font-size:2.5rem; margin-bottom:0.6rem; position:relative; }}
+div.hero-banner p {{ color: #E2E8F0 !important; font-size:1.05rem; max-width:640px; margin:0; position:relative; }}
 .hero-badge {{ display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.14);
-  color:#EAF0FF; font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+  color:#EAF0FF !important; font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
   padding:0.3rem 0.8rem; border-radius:999px; margin-bottom:1rem; position:relative;
   border:1px solid rgba(255,255,255,0.2); }}
 .live-dot {{ width:7px; height:7px; border-radius:50%; background:#3DDC97; box-shadow:0 0 0 rgba(61,220,151,0.6);
@@ -102,21 +334,21 @@ h1,h2,h3 {{ color:var(--navy); font-weight:800 !important; letter-spacing:-0.02e
 }}
 
 /* Cards */
-.feature-card, .glass-card {{ background:white; border:1px solid #EAEFF5; border-radius:16px; padding:1.6rem;
-  height:100%; box-shadow:0 4px 16px rgba(15,30,60,0.05); transition:transform .15s ease, box-shadow .15s ease; }}
-.feature-card:hover {{ transform:translateY(-4px); box-shadow:0 14px 28px rgba(15,30,60,0.12); border-color:#DCE6F7; }}
+.feature-card, .glass-card {{ background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.6rem;
+  height:100%; box-shadow: var(--card-shadow); transition:transform .15s ease, box-shadow .15s ease; }}
+.feature-card:hover {{ transform:translateY(-4px); border-color: var(--border-hover); }}
 .feature-card .icon {{ font-size:1.9rem; margin-bottom:0.5rem; filter: drop-shadow(0 4px 8px rgba(79,124,255,0.25)); }}
-.feature-card h4 {{ margin:0 0 0.4rem 0; color:var(--navy); font-weight:700; }}
+.feature-card h4 {{ margin:0 0 0.4rem 0; color:var(--text-primary); font-weight:700; }}
 .feature-card p {{ color:var(--muted); font-size:0.92rem; margin:0; }}
 
 /* Nav cards (dashboard home) */
-.nav-card {{ background:white; border:1px solid #EAEFF5; border-radius:16px; padding:1.5rem 1.5rem 1.1rem 1.5rem;
-  box-shadow:0 4px 16px rgba(15,30,60,0.05); transition:transform .15s ease, box-shadow .15s ease;
+.nav-card {{ background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem 1.5rem 1.1rem 1.5rem;
+  box-shadow: var(--card-shadow); transition:transform .15s ease, box-shadow .15s ease;
   margin-bottom:0.6rem; position:relative; overflow:hidden; }}
-.nav-card:hover {{ transform:translateY(-4px); box-shadow:0 16px 30px rgba(15,30,60,0.14); border-color:#DCE6F7; }}
+.nav-card:hover {{ transform:translateY(-4px); border-color: var(--border-hover); }}
 .nav-card .nav-icon {{ font-size:1.7rem; width:48px; height:48px; display:flex; align-items:center; justify-content:center;
   background:var(--accent-soft); border-radius:12px; margin-bottom:0.8rem; }}
-.nav-card h4 {{ margin:0 0 0.3rem 0; color:var(--navy); font-weight:800; font-size:1.05rem; }}
+.nav-card h4 {{ margin:0 0 0.3rem 0; color:var(--text-primary); font-weight:800; font-size:1.05rem; }}
 .nav-card p {{ color:var(--muted); font-size:0.88rem; margin:0 0 0.6rem 0; min-height:2.6rem; }}
 .nav-card .stButton>button {{ width:100%; background:var(--accent-soft) !important; color:var(--accent) !important;
   box-shadow:none !important; font-weight:700 !important; }}
@@ -126,13 +358,13 @@ h1,h2,h3 {{ color:var(--navy); font-weight:800 !important; letter-spacing:-0.02e
   font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase; padding:0.3rem 0.85rem;
   border-radius:999px; margin-bottom:0.6rem; }}
 
-/* KPI / metric cards with staggered entrance animation */
+/* KPI / metric cards */
 @keyframes fadeSlideUp {{
   from {{ opacity:0; transform:translateY(10px); }}
   to {{ opacity:1; transform:translateY(0); }}
 }}
-.metric-card {{ background:white; border:1px solid #EAEFF5; border-radius:16px; padding:1.3rem 1.5rem;
-  box-shadow:0 4px 16px rgba(15,30,60,0.05); text-align:left; position:relative; overflow:hidden;
+.metric-card {{ background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.3rem 1.5rem;
+  box-shadow: var(--card-shadow); text-align:left; position:relative; overflow:hidden;
   transition:transform .15s ease; animation: fadeSlideUp .5s ease both; }}
 .metric-card:hover {{ transform:translateY(-2px); }}
 .metric-card::before {{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent); }}
@@ -140,62 +372,124 @@ h1,h2,h3 {{ color:var(--navy); font-weight:800 !important; letter-spacing:-0.02e
 .metric-card.legit::before {{ background:var(--legit); }}
 .metric-card.alert {{ animation: fadeSlideUp .5s ease both, cardGlow 2.2s ease-in-out infinite; }}
 @keyframes cardGlow {{
-  0%, 100% {{ box-shadow:0 4px 16px rgba(15,30,60,0.05); }}
-  50% {{ box-shadow:0 4px 22px rgba(229,72,77,0.28); }}
+  0%, 100% {{ box-shadow: var(--card-shadow); }}
+  50% {{ box-shadow: 0 4px 22px rgba(229,72,77,0.32); }}
 }}
 .metric-card .label {{ color:var(--muted); font-size:0.8rem; font-weight:700; text-transform:uppercase;
   letter-spacing:0.04em; margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center; }}
-.metric-card .value {{ font-size:2rem; font-weight:800; color:var(--navy); }}
+.metric-card .value {{ font-size:2rem; font-weight:800; color:var(--text-primary); }}
 .metric-card.fraud .value {{ color:var(--fraud); }}
 .metric-card.legit .value {{ color:var(--legit); }}
 .metric-card.accent .value {{ color:var(--accent); }}
 .metric-card .delta {{ font-size:0.78rem; font-weight:600; color:var(--muted); margin-top:0.25rem; }}
 
-/* Buttons */
-.stButton>button, .stDownloadButton>button {{ background:linear-gradient(120deg,var(--navy),#173a63) !important;
-  color:white !important; border-radius:10px !important; border:none !important; font-weight:600 !important;
-  padding:0.55rem 1.3rem !important; transition:all .15s ease !important; box-shadow:0 4px 12px rgba(11,31,58,0.18); }}
-.stButton>button:hover, .stDownloadButton>button:hover {{
-  background:linear-gradient(120deg,var(--accent),var(--accent2)) !important; transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(79,124,255,0.3); }}
+/* Buttons (Main Area, Form Submit, Download) */
+.stButton>button,
+.stDownloadButton>button,
+div[data-testid="stFormSubmitButton"] > button {{
+  background: {T['btn_bg']} !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 0.55rem 1.3rem !important;
+  transition: all .15s ease !important;
+  box-shadow: 0 4px 12px rgba(11,31,58,0.18);
+}}
+.stButton>button p,
+.stDownloadButton>button p,
+div[data-testid="stFormSubmitButton"] > button p {{
+  color: #FFFFFF !important;
+}}
+.stButton>button:hover,
+.stDownloadButton>button:hover,
+div[data-testid="stFormSubmitButton"] > button:hover {{
+  background: linear-gradient(120deg,var(--accent),var(--accent2)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(79,124,255,0.3);
+}}
 
-/* Upload area */
-.upload-instructions {{ background:white; border:1px solid #EAEFF5; border-radius:14px; padding:1.1rem 1.4rem;
-  margin-bottom:0.9rem; box-shadow:0 2px 10px rgba(15,30,60,0.04); }}
+/* Upload area & File Uploader Dropzone + Upload Button */
+.upload-instructions {{ background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.4rem;
+  margin-bottom:0.9rem; box-shadow: var(--card-shadow); }}
 .upload-instructions .cols-chip {{ display:inline-block; background:var(--accent-soft); color:var(--accent);
   font-family: 'JetBrains Mono', monospace; font-size:0.72rem; font-weight:700; padding:0.15rem 0.5rem;
   border-radius:6px; margin:0.15rem 0.2rem 0.15rem 0; }}
-[data-testid="stFileUploaderDropzone"] {{ border-radius:14px; border:2px dashed #C7D3E6 !important; background:#FBFCFE; }}
-.file-chip-row {{ display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.8rem 0 0.2rem 0; }}
-.file-chip {{ background:white; border:1px solid #EAEFF5; border-radius:12px; padding:0.6rem 1rem;
-  box-shadow:0 2px 8px rgba(15,30,60,0.04); font-size:0.82rem; color:var(--muted); }}
-.file-chip b {{ color:var(--navy); display:block; font-size:1rem; }}
+.upload-instructions code {{
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  padding: 0.12rem 0.45rem;
+  border-radius: 5px;
+}}
 
-[data-testid="stDataFrame"] {{ border-radius:14px; overflow:hidden; border:1px solid #EAEFF5;
-  box-shadow:0 2px 10px rgba(15,30,60,0.04); }}
-div[data-testid="stAlert"] {{ border-radius:12px; }}
+section[data-testid="stFileUploaderDropzone"],
+div[data-testid="stFileUploaderDropzone"] {{
+  border-radius: 14px !important;
+  border: 2px dashed var(--border-hover) !important;
+  background-color: var(--surface-alt) !important;
+  padding: 1.1rem 1.3rem !important;
+}}
+section[data-testid="stFileUploaderDropzone"] span,
+section[data-testid="stFileUploaderDropzone"] small,
+section[data-testid="stFileUploaderDropzone"] p,
+section[data-testid="stFileUploaderDropzone"] div,
+div[data-testid="stFileUploaderDropzone"] span,
+div[data-testid="stFileUploaderDropzone"] small,
+div[data-testid="stFileUploaderDropzone"] p {{
+  color: var(--text-muted) !important;
+}}
+section[data-testid="stFileUploaderDropzone"] button,
+div[data-testid="stFileUploaderDropzone"] button,
+div[data-testid="stFileUploader"] button {{
+  background: {T['btn_bg']} !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 0.5rem 1.1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(11,31,58,0.18) !important;
+}}
+section[data-testid="stFileUploaderDropzone"] button *,
+div[data-testid="stFileUploaderDropzone"] button *,
+div[data-testid="stFileUploader"] button * {{
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}}
+section[data-testid="stFileUploaderDropzone"] button:hover,
+div[data-testid="stFileUploaderDropzone"] button:hover {{
+  background: linear-gradient(120deg,var(--accent),var(--accent2)) !important;
+}}
+
+.file-chip-row {{ display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.8rem 0 0.2rem 0; }}
+.file-chip {{ background: var(--surface); border:1px solid var(--border); border-radius:12px; padding:0.6rem 1rem;
+  box-shadow: var(--card-shadow); font-size:0.82rem; color:var(--muted); }}
+.file-chip b {{ color:var(--text-primary); display:block; font-size:1rem; }}
+
+[data-testid="stDataFrame"] {{ border-radius:14px; overflow:hidden; border:1px solid var(--border);
+  box-shadow: var(--card-shadow); }}
 
 /* Result banner (single transaction) */
-.result-banner {{ border-radius:16px; padding:1.5rem 1.7rem; margin:0.8rem 0; box-shadow:0 6px 20px rgba(15,30,60,0.06);
+.result-banner {{ border-radius:16px; padding:1.5rem 1.7rem; margin:0.8rem 0; box-shadow: var(--card-shadow);
   display:flex; align-items:center; gap:1rem; }}
 .result-banner .r-icon {{ font-size:2.2rem; }}
 .result-banner .r-title {{ font-weight:800; font-size:1.25rem; margin-bottom:0.15rem; }}
 .result-banner .r-sub {{ font-size:0.9rem; font-weight:500; opacity:0.85; }}
-.result-banner.fraud {{ background:var(--fraud-soft); color:var(--fraud); border:1px solid rgba(229,72,77,0.25); }}
-.result-banner.legit {{ background:var(--legit-soft); color:var(--legit); border:1px solid rgba(31,169,122,0.25); }}
+.result-banner.fraud {{ background:var(--fraud-soft); color:var(--fraud); border:1px solid rgba(229,72,77,0.28); }}
+.result-banner.legit {{ background:var(--legit-soft); color:var(--legit); border:1px solid rgba(31,169,122,0.28); }}
+.result-banner.fraud *, .result-banner.legit * {{ color: inherit !important; }}
 
 /* Filters panel */
-.filter-panel {{ background:white; border:1px solid #EAEFF5; border-radius:14px; padding:1rem 1.3rem 0.3rem 1.3rem;
+.filter-panel {{ background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.3rem 0.3rem 1.3rem;
   margin-bottom:0.8rem; }}
 
 /* Footer */
-.app-footer {{ margin-top:2.5rem; padding:1.4rem 0 0.6rem 0; border-top:1px solid #E4E9F2;
+.app-footer {{ margin-top:2.5rem; padding:1.4rem 0 0.6rem 0; border-top:1px solid var(--border);
   display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; }}
 .app-footer .f-left {{ color:var(--muted); font-size:0.82rem; }}
 .app-footer .f-right {{ display:flex; gap:0.6rem; align-items:center; }}
 .app-footer .f-badge {{ background:var(--accent-soft); color:var(--accent); font-size:0.72rem; font-weight:700;
   padding:0.25rem 0.6rem; border-radius:999px; }}
-hr {{ margin:1.4rem 0; }}
+hr {{ margin:1.4rem 0; border-color: var(--border); }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -212,19 +506,34 @@ def metric_card(label, value, variant="", delay=0.0, badge=None, alert=False):
 
 
 def style_fig(fig, title=None, legend=True):
-    """Apply consistent, professional theming to any Plotly figure."""
+    """Apply consistent, theme-aware styling to any Plotly figure."""
     fig.update_layout(
         title=title or (fig.layout.title.text if fig.layout.title else None),
-        font=dict(family="Inter, sans-serif", color=COLORS["navy"]),
-        title_font=dict(size=16, family="Inter, sans-serif"),
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color=T["text_primary"]),
+        title_font=dict(size=16, family="Inter, sans-serif", color=T["text_primary"]),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
         margin=dict(t=55, l=10, r=10, b=10),
-        legend=dict(orientation="h", y=-0.18) if legend else dict(),
+        legend=dict(orientation="h", y=-0.18, font=dict(color=T["text_primary"])) if legend else dict(),
         showlegend=legend,
-        hoverlabel=dict(bgcolor="white", font_family="Inter, sans-serif"),
+        hoverlabel=dict(
+            bgcolor=T["surface"],
+            bordercolor=T["border"],
+            font=dict(family="Inter, sans-serif", color=T["text_primary"]),
+        ),
     )
-    fig.update_xaxes(gridcolor="#EEF1F6", zerolinecolor="#EEF1F6")
-    fig.update_yaxes(gridcolor="#EEF1F6", zerolinecolor="#EEF1F6")
+    fig.update_xaxes(
+        gridcolor=T["grid"],
+        zerolinecolor=T["grid"],
+        tickfont=dict(color=T["text_muted"]),
+        title_font=dict(color=T["text_primary"]),
+    )
+    fig.update_yaxes(
+        gridcolor=T["grid"],
+        zerolinecolor=T["grid"],
+        tickfont=dict(color=T["text_muted"]),
+        title_font=dict(color=T["text_primary"]),
+    )
     return fig
 
 
@@ -234,19 +543,20 @@ def make_gauge(value_pct, threshold_pct=50.0):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=value_pct,
-        number={"suffix": "%", "font": {"size": 34, "color": COLORS["navy"]}},
+        number={"suffix": "%", "font": {"size": 34, "color": T["text_primary"]}},
         gauge={
-            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": COLORS["muted"]},
-            "bar": {"color": COLORS["navy"], "thickness": 0.28},
-            "bgcolor": "white",
-            "borderwidth": 0,
+            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": T["text_muted"], "tickfont": {"color": T["text_muted"]}},
+            "bar": {"color": T["accent"], "thickness": 0.28},
+            "bgcolor": T["surface"],
+            "borderwidth": 1,
+            "bordercolor": T["border"],
             "steps": [
-                {"range": [0, 40], "color": COLORS["legit_soft"]},
-                {"range": [40, 70], "color": COLORS["amber_soft"]},
-                {"range": [70, 100], "color": COLORS["fraud_soft"]},
+                {"range": [0, 40], "color": T["legit_soft"]},
+                {"range": [40, 70], "color": T["amber_soft"]},
+                {"range": [70, 100], "color": T["fraud_soft"]},
             ],
             "threshold": {
-                "line": {"color": COLORS["fraud"], "width": 3},
+                "line": {"color": T["fraud"], "width": 3},
                 "thickness": 0.85,
                 "value": threshold_pct,
             },
@@ -254,7 +564,8 @@ def make_gauge(value_pct, threshold_pct=50.0):
     ))
     fig.update_layout(
         height=250, margin=dict(t=30, b=10, l=25, r=25),
-        paper_bgcolor="rgba(0,0,0,0)", font=dict(family="Inter, sans-serif", color=COLORS["navy"]),
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color=T["text_primary"]),
     )
     return fig
 
@@ -316,13 +627,26 @@ def go_to(target):
 
 
 # ============================================================
+# TOP-RIGHT THEME SWITCH (Between Deploy and 3-Dot Menu)
+# ============================================================
+is_dark = st.session_state["theme_mode"] == "dark"
+switch_icon = "☀️" if is_dark else "🌙"
+switch_help = "Switch to Light Mode" if is_dark else "Switch to Dark Mode"
+st.button(
+    switch_icon,
+    key="theme_switch_btn",
+    on_click=toggle_theme,
+    help=switch_help,
+)
+
+# ============================================================
 # SIDEBAR
 # ============================================================
 st.sidebar.markdown("""
 <div style="text-align:center; padding:0.5rem 0 1.2rem 0;">
-  <div style="font-size:2.2rem;">💳</div>
-  <div style="font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">Fraud Detection</div>
-  <div style="font-size:0.8rem; color:#B7C6E0; margin-top:0.2rem;">
+  <div style="font-size:2.5rem;">💳</div>
+  <div style="font-size:1.35rem; font-weight:800; letter-spacing:-0.01em;">Fraud Detection</div>
+  <div style="font-size:0.92rem; color:#B7C6E0; margin-top:0.25rem;">
     <span class="live-dot"></span>&nbsp; ML-Powered Transaction Analysis
   </div>
 </div>
@@ -336,14 +660,15 @@ page = st.sidebar.radio("Navigate", NAV_OPTIONS, key="nav", label_visibility="co
 
 available_models = discover_models()
 if len(available_models) > 1:
-    st.sidebar.markdown("---")
     st.sidebar.caption("MODEL")
     selected_model_path = st.sidebar.selectbox("Choose a model", available_models, label_visibility="collapsed")
 else:
     selected_model_path = available_models[0]
 
-st.sidebar.markdown("---")
-st.sidebar.caption("Built with scikit-learn / XGBoost + Streamlit")
+st.sidebar.markdown(
+    '<div class="sidebar-bottom-credit">Built with scikit-learn + Streamlit</div>',
+    unsafe_allow_html=True,
+)
 
 # ============================================================
 # PAGE: HOME (Dashboard)
@@ -580,7 +905,7 @@ elif page == "📊 Upload & Predict":
                         go.Scatter(x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {roc_auc:.3f})",
                                    line=dict(color=COLORS["accent"])),
                         go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Random",
-                                   line=dict(dash="dash", color="#C7D3E6")),
+                                   line=dict(dash="dash", color=T["text_muted"])),
                     ])
                     fig.update_layout(xaxis_title="False Positive Rate", yaxis_title="True Positive Rate")
                     st.plotly_chart(style_fig(fig, "ROC Curve"), use_container_width=True)
