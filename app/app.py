@@ -181,8 +181,8 @@ header[data-testid="stHeader"] span {{
 /* Minimal Icon-Only Theme Switch aligned on the exact same baseline as Deploy and 3-dot menu */
 div.st-key-theme_switch_btn {{
   position: fixed !important;
-  top: 0.78rem !important;
-  right: 3.1rem !important;
+  top: 3.5rem !important;
+  right: 1.25rem !important;
   width: 32px !important;
   height: 32px !important;
   z-index: 999995 !important;
